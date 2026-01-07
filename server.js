@@ -1,0 +1,38 @@
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cors from "cors";
+import authRoutes from "./src/Routes/AuthRoutes.js";
+import adminRoutes from "./src/Routes/AdminRoutes.js";
+import userRoutes from './src/Routes/UserRoutes.js'
+import { createAdminIfNotExists } from "./src/utils/CreateAdmin.js";
+import { seedPermissions } from "./src/script/seedPermission.js";
+
+dotenv.config();
+createAdminIfNotExists();
+
+const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
+
+app.use(express.json());
+
+const DB_URI = process.env.DB_URI;
+
+mongoose.connect(DB_URI)
+  .then(async () => {
+    console.log("✅ Mongo db connected")
+    await seedPermissions();
+  })
+  .catch(err => console.log("❌ MongoDB connection error:", err));
+
+
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/user", userRoutes);
+
+app.listen(5000, () => console.log("🚀 Server running on port 5000"));
