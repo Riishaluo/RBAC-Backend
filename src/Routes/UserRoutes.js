@@ -1,67 +1,34 @@
 import express from "express";
-import User from "../models/User.js";
 import { protect } from "../middleware/AuthMiddleware.js";
-import { checkPermission } from "../middleware/checkPermission.js";
-import Role from "../models/Role.js";
+import { userOnly } from "../middleware/userMiddleware.js";
+import permission from "../models/permission.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
-router.get(
-  "/users/:id",
-  protect,
-  checkPermission("VIEW_USERS"),
-  async (req, res) => {
-    const target = await User.findById(req.params.id);
 
-    if (req.permission.scope === "self" &&
-        req.user._id.toString() !== target._id.toString()) {
-      return res.status(403).json({ message: "Self access only" });
-    }
-
-    if (req.permission.scope === "team" &&
-        req.user.team?.toString() !== target.team?.toString()) {
-      return res.status(403).json({ message: "Team access only" });
-    }
-
-    res.json(target);
+router.get("/:id", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .populate("team")  
+      .select("-password"); 
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-);
-
-
-
-
-// GET /api/user/me
-router.get("/me", protect, async (req, res) => {
-  const user = await User.findById(req.user._id)
-    .populate("team", "name")
-    .populate("roles", "name");
-
-  if (!user) return res.status(404).json({ message: "User not found" });
-
-  const now = new Date();
-
-  const rolesWithPermissions = await Role.find({ _id: { $in: user.roles } })
-    .populate("permissions.permission");
-
-  const permissionMap = new Map();
-  for (const role of rolesWithPermissions) {
-    for (const rp of role.permissions) {
-      const perm = rp.permission;
-      if (!perm) continue;
-      if ((rp.validFrom && rp.validFrom > now) || (rp.validTill && rp.validTill < now)) continue;
-      if (!permissionMap.has(perm.name)) {
-        permissionMap.set(perm.name, { name: perm.name, scope: perm.scope });
-      }
-    }
-  }
-
-  res.json({
-    email: user.email,
-    team: user.team,
-    roles: user.roles.map(r => r.name),
-    permissions: Array.from(permissionMap.values())
-  });
 });
 
+
+router.get("/teams/:id/users", protect, async (req, res) => {
+  try {
+    console.log("here")
+    const users = await User.find({ team: req.params.id, isAdmin: false })
+      .select("email _id"); 
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 export default router;

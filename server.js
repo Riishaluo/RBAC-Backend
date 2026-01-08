@@ -6,7 +6,6 @@ import authRoutes from "./src/Routes/AuthRoutes.js";
 import adminRoutes from "./src/Routes/AdminRoutes.js";
 import userRoutes from './src/Routes/UserRoutes.js'
 import { createAdminIfNotExists } from "./src/utils/CreateAdmin.js";
-import { seedPermissions } from "./src/script/seedPermission.js";
 
 dotenv.config();
 createAdminIfNotExists();
@@ -21,13 +20,10 @@ app.use(cors({
 
 app.use(express.json());
 
-const DB_URI = process.env.DB_URI;
+const DB_URI = process.env.DB_URI
 
 mongoose.connect(DB_URI)
-  .then(async () => {
-    console.log("✅ Mongo db connected")
-    await seedPermissions();
-  })
+  .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.log("❌ MongoDB connection error:", err));
 
 
