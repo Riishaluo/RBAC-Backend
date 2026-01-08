@@ -14,7 +14,8 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://rbac-frontend-q1tz-4k87l3i43-riishaluos-projects.vercel.app"
+  "https://rbac-frontend-q1tz-4k87l3i43-riishaluos-projects.vercel.app",
+  "https://rbac-frontend-65jh.vercel.app" 
 ];
 
 app.use(cors({
