@@ -47,7 +47,7 @@ router.post("/create-user", protect, adminOnly, async (req, res) => {
 });
 
 
-router.put("/update-user-role/:userId", protect, adminOnly, async (req, res) => {
+router.post("/update-user-role/:userId", protect, adminOnly, async (req, res) => {
   try {
     const { userId } = req.params;
     const { role } = req.body;
