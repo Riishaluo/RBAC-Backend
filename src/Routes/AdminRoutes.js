@@ -11,6 +11,54 @@ import Role from "../models/Role.js";
 
 const router = express.Router();
 
+
+
+router.put("/update-user-role/:userId", protect, adminOnly, async (req, res) => {
+  try {
+    console.log("here")
+    const { userId } = req.params;
+    const { role } = req.body;
+    console.log(role)
+    if (!role || !["ADMIN", "USER"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role value" });
+    }
+
+    const exists = await User.findById(userId);
+    console.log("User exists?", exists);
+
+    const roleDoc = await Role.findOne({ name: role });
+    console.log(roleDoc)
+    if (!roleDoc) {
+      return res.status(404).json({ message: "Role not found" });
+    }
+
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        role: roleDoc._id, // ✅ FIXED
+        isAdmin: role === "ADMIN"
+      },
+      { new: true, runValidators: true }
+    );
+
+    console.log(user)
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User role updated successfully",
+      user
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 router.post("/create-user", protect, adminOnly, async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -45,50 +93,6 @@ router.post("/create-user", protect, adminOnly, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
-router.post("/update-user-role/:userId", protect, adminOnly, async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { role } = req.body;
-
-    // Validate role
-    if (!role || !["ADMIN", "USER"].includes(role)) {
-      return res.status(400).json({ message: "Invalid role value" });
-    }
-
-    // Find role document
-    const roleDoc = await Role.findOne({ name: role });
-    if (!roleDoc) {
-      return res.status(404).json({ message: "Role not found" });
-    }
-
-    // Update user
-    const user = await User.findByIdAndUpdate(
-      userId,
-      {
-        role: [roleDoc._id],
-        isAdmin: role === "ADMIN"
-      },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json({
-      message: "User role updated successfully",
-      user
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-
-
 
 
 router.post("/assign-permission", protect, adminOnly, async (req, res) => {

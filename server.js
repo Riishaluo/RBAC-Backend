@@ -43,4 +43,4 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/user", userRoutes);
 
-app.listen(5000, () => console.log("🚀 Server running on port 5000"));
+app.listen(9999, () => console.log("🚀 Server running on port 9999"));
