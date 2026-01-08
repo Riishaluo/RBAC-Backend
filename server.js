@@ -12,11 +12,21 @@ createAdminIfNotExists();
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://rbac-frontend-q1tz-4k87l3i43-riishaluos-projects.vercel.app"
+];
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
-
 
 app.use(express.json());
 
