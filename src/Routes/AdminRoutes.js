@@ -90,6 +90,7 @@ router.put("/update-user-role/:userId", protect, adminOnly, async (req, res) => 
 
 
 
+
 router.post("/assign-permission", protect, adminOnly, async (req, res) => {
   const { userId, permissionId } = req.body;
 
